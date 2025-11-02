@@ -2,16 +2,16 @@ name: Docker CI/CD for UniversityPortal_shumeiko
 
 on: 
   push: 
-    branches: ["master"] 
+    branches: ["master"]
 
 env:
-  AZURE_WEBAPP_NAME: labwebtech 
+  AZURE_WEBAPP_NAME: labwebtech
   
-  DOCKER_IMAGE_NAME: bemoll/universityportal_shumeiko 
+  DOCKER_IMAGE_NAME: bemoll/universityportal_shumeiko
   
   DOTNET_CORE_VERSION: 9.0.305
   
-  WORKING_DIRECTORY: ./UniversityPortal_shumeiko 
+  WORKING_DIRECTORY: ./UniversityPortal_shumeiko
 
 jobs: 
   # Виконуємо збірку, щоб перевірити, чи код компілюється (Це етап-перевірка)
