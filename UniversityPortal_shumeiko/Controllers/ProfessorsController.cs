@@ -9,12 +9,14 @@ namespace UniversityPortal_shumeiko.Controllers
     public class ProfessorsController : Controller
     {
         private readonly IProfessorService _professorService;
-        private readonly IFileService _fileService;
+        // IBlobService - это имя, которое я использовал в предыдущем ответе. 
+        // Если у вас он называется IFileService, используйте ваше имя.
+        private readonly IBlobService _blobService;
 
-        public ProfessorsController(IProfessorService professorService, IFileService fileService)
+        public ProfessorsController(IProfessorService professorService, IBlobService blobService)
         {
             _professorService = professorService;
-            _fileService = fileService;
+            _blobService = blobService; // Убедитесь, что это IBlobService (или IFileService)
         }
 
         // GET: Professors
@@ -44,18 +46,16 @@ namespace UniversityPortal_shumeiko.Controllers
         // GET: Professors/Create
         public IActionResult Create()
         {
-            // Передаємо порожню ViewModel у подання
             return View(new ProfessorCreateViewModel());
         }
 
         // POST: Professors/Create
         [HttpPost]
-
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ProfessorCreateViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                // Ручне відображення (мапінг) даних з ViewModel на доменну модель
                 var professor = new Professor
                 {
                     Name = viewModel.Name,
@@ -64,17 +64,17 @@ namespace UniversityPortal_shumeiko.Controllers
 
                 if (viewModel.ProfilePictureFile != null && viewModel.ProfilePictureFile.Length > 0)
                 {
-                    professor.ProfilePictureUrl = await _fileService.SaveFileAsync(viewModel.ProfilePictureFile, "professors");
+                    // Предполагается, что ваш сервис возвращает URL
+                    professor.ProfilePictureUrl = await _blobService.UploadFileAsync(viewModel.ProfilePictureFile);
                 }
 
                 await _professorService.CreateProfessorAsync(professor);
                 return RedirectToAction(nameof(Index));
             }
-            // Якщо валідація не пройдена, повертаємо ту саму ViewModel у подання
             return View(viewModel);
         }
 
-        // GET: Professors/Edit/5
+        // GET: Professors/Edit/5 (ОБНОВЛЕНО)
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -87,15 +87,25 @@ namespace UniversityPortal_shumeiko.Controllers
             {
                 return NotFound();
             }
-            return View(professor);
+
+            // Мапим модель в ViewModel
+            var viewModel = new ProfessorEditViewModel
+            {
+                Id = professor.Id,
+                Name = professor.Name,
+                Specialization = professor.Specialization,
+                CurrentProfilePictureUrl = professor.ProfilePictureUrl
+            };
+
+            return View(viewModel); // Передаем ViewModel в View
         }
 
-        // POST: Professors/Edit/5
+        // POST: Professors/Edit/5 (ОБНОВЛЕНО)
         [HttpPost]
-
-        public async Task<IActionResult> Edit(int id, Professor professor, IFormFile? profilePictureFile)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, ProfessorEditViewModel viewModel)
         {
-            if (id != professor.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
@@ -104,36 +114,37 @@ namespace UniversityPortal_shumeiko.Controllers
             {
                 try
                 {
-                    // Отримуємо поточні дані професора з бази, щоб мати доступ до старого шляху файлу
+                    // 1. Получаем существующую сущность из БД
                     var professorToUpdate = await _professorService.GetProfessorByIdAsync(id);
                     if (professorToUpdate == null)
                     {
                         return NotFound();
                     }
 
-                    // Перевіряємо, чи було завантажено новий файл
-                    if (profilePictureFile != null && profilePictureFile.Length > 0)
+                    // 2. Проверяем, был ли загружен *новый* файл
+                    if (viewModel.ProfilePictureFile != null && viewModel.ProfilePictureFile.Length > 0)
                     {
-                        // Якщо існує старе фото, видаляємо його
+                        // 3. Если старое фото существует, удаляем его из Blob
                         if (!string.IsNullOrEmpty(professorToUpdate.ProfilePictureUrl))
                         {
-                            _fileService.DeleteFile(professorToUpdate.ProfilePictureUrl);
+                            // Извлекаем имя blob из URL для удаления
+                            var oldBlobName = new Uri(professorToUpdate.ProfilePictureUrl).Segments.Last();
+                            await _blobService.DeleteFileAsync(oldBlobName);
                         }
 
-                        // Зберігаємо новий файл і оновлюємо шлях
-                        professorToUpdate.ProfilePictureUrl = await _fileService.SaveFileAsync(profilePictureFile, "professors");
+                        // 4. Загружаем новый файл и получаем новый URL
+                        professorToUpdate.ProfilePictureUrl = await _blobService.UploadFileAsync(viewModel.ProfilePictureFile);
                     }
 
-                    // Оновлюємо інші властивості моделі
-                    professorToUpdate.Name = professor.Name;
-                    professorToUpdate.Specialization = professor.Specialization;
+                    // 5. Обновляем остальные данные
+                    professorToUpdate.Name = viewModel.Name;
+                    professorToUpdate.Specialization = viewModel.Specialization;
 
-                    // Зберігаємо оновлену сутність в базі даних
                     await _professorService.UpdateProfessorAsync(professorToUpdate);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!await _professorService.ProfessorExistsAsync(professor.Id))
+                    if (!await _professorService.ProfessorExistsAsync(viewModel.Id))
                     {
                         return NotFound();
                     }
@@ -144,7 +155,8 @@ namespace UniversityPortal_shumeiko.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(professor);
+            // Если модель невалидна, возвращаем ViewModel (CurrentProfilePictureUrl сохранится)
+            return View(viewModel);
         }
 
         // GET: Professors/Delete/5
@@ -164,11 +176,33 @@ namespace UniversityPortal_shumeiko.Controllers
             return View(professor);
         }
 
-        // POST: Professors/Delete/5
-
-        [HttpPost]
-        public async Task<IActionResult> Delete(int id)
+        // POST: Professors/Delete/5 (ОБНОВЛЕНО)
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            var professor = await _professorService.GetProfessorByIdAsync(id);
+            if (professor == null)
+            {
+                return NotFound();
+            }
+
+            // 1. Удаляем фото из Blob Storage, если оно есть
+            if (!string.IsNullOrEmpty(professor.ProfilePictureUrl))
+            {
+                try
+                {
+                    var blobName = new Uri(professor.ProfilePictureUrl).Segments.Last();
+                    await _blobService.DeleteFileAsync(blobName);
+                }
+                catch (Exception ex)
+                {
+                    // Залогировать ошибку, но продолжить удаление из БД
+                    Console.WriteLine($"Error deleting blob: {ex.Message}");
+                }
+            }
+
+            // 2. Удаляем запись из БД
             await _professorService.DeleteProfessorAsync(id);
             return RedirectToAction(nameof(Index));
         }

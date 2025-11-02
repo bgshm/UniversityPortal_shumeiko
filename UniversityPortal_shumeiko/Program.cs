@@ -11,6 +11,7 @@ builder.Services.AddScoped<IProfessorService, ProfessorService>();
 builder.Services.AddScoped<IFileService, FileService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IBlobService, BlobService>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

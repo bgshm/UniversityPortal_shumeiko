@@ -1,4 +1,4 @@
-﻿@model UniversityPortal_shumeiko.Models.Professor
+﻿@model UniversityPortal_shumeiko.Models.ViewModels.ProfessorEditViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -12,7 +12,10 @@
     <div class="col-md-4">
         <form asp-action="Edit" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="CurrentProfilePictureUrl" />
+
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
@@ -23,10 +26,25 @@
                 <input asp-for="Specialization" class="form-control" />
                 <span asp-validation-for="Specialization" class="text-danger"></span>
             </div>
+
             <div class="form-group">
-                <label for="profilePictureFile" class="control-label">Фото профілю</label>
-                <input type="file" name="profilePictureFile" id="profilePictureFile" class="form-control" />
+                <label class="control-label">Текущее фото</label>
+                @if (!string.IsNullOrEmpty(Model.CurrentProfilePictureUrl))
+                {
+                    <img src="@Model.CurrentProfilePictureUrl" alt="Current Profile Picture" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;" />
+                }
+                else
+                {
+                    <p>Фото нет.</p>
+                }
             </div>
+
+            <div class="form-group">
+                <label asp-for="ProfilePictureFile" class="control-label">Загрузить новое фото (заменит старое)</label>
+                <input asp-for="ProfilePictureFile" class="form-control" />
+                <span asp-validation-for="ProfilePictureFile" class="text-danger"></span>
+            </div>
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
@@ -39,5 +57,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
