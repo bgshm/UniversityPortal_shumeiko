@@ -5,7 +5,7 @@ on:
     branches: ["master"]
 
 env:
-  AZURE_WEBAPP_NAME: labwebtech
+  AZURE_WEBAPP_NAME: UniversityPortalshumeiko20251102215221
   
   DOCKER_IMAGE_NAME: bemoll/universityportal_shumeiko
   
