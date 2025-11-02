@@ -1,4 +1,4 @@
-name: Docker CI/CD for WebTechnologiesLab1
+name: Docker CI/CD for UniversityPortal_shumeiko
 
 on: 
   push: 
@@ -7,11 +7,11 @@ on:
 env:
   AZURE_WEBAPP_NAME: labwebtech 
   
-  DOCKER_IMAGE_NAME: kucherukdanylo/webtechlab1 
+  DOCKER_IMAGE_NAME: bemoll/universityportal_shumeiko 
   
   DOTNET_CORE_VERSION: 9.0.305
   
-  WORKING_DIRECTORY: ./WebTechnologiesLab1 
+  WORKING_DIRECTORY: ./UniversityPortal_shumeiko 
 
 jobs: 
   # Виконуємо збірку, щоб перевірити, чи код компілюється (Це етап-перевірка)

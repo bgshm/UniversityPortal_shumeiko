@@ -96,6 +96,7 @@ namespace UniversityPortal_shumeiko.Controllers
             };
             return View(viewModel);
         }
+        // niger
 
         // POST: Students/Edit/5
         [HttpPost]
@@ -106,8 +107,6 @@ namespace UniversityPortal_shumeiko.Controllers
             {
                 return NotFound();
             }
-
-            
 
             // isModelValid будет false, если Name пустое или EnrollmentDate - не дата
 
