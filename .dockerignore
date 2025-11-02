@@ -1,0 +1,9 @@
+# Исключаем артефакты сборки
+**/in/
+**/[o|O]bj/
+
+# Исключаем файлы Docker, чтобы они не попали в образ
+Dockerfile
+.dockerignore
+docker-compose.yml
+.env
