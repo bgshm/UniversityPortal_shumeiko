@@ -28,14 +28,14 @@
             </div>
 
             <div class="form-group">
-                <label class="control-label">Текущее фото</label>
+                <label class="control-label">Current photo</label>
                 @if (!string.IsNullOrEmpty(Model.CurrentProfilePictureUrl))
                 {
                     <img src="@Model.CurrentProfilePictureUrl" alt="Current Profile Picture" style="width: 100px; height: 100px; object-fit: cover; border-radius: 5px;" />
                 }
                 else
                 {
-                    <p>Фото нет.</p>
+                    <p>No photo.</p>
                 }
             </div>
 
