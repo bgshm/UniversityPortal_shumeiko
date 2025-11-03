@@ -43,7 +43,7 @@ jobs:
         
         # 1. Збірка: Вказуємо папку з контекстом та Dockerfile
         #    Тегируем ОДИН образ ДВУМЯ именами: уникальным (sha) и 'latest'
-        docker build . -f ${{ env.WORKING_DIRECTORY }}/Dockerfile \
+        docker build --no-cache . -f ${{ env.WORKING_DIRECTORY }}/Dockerfile \
           -t ${{ env.DOCKER_IMAGE_NAME }}:$IMAGE_TAG \
           -t ${{ env.DOCKER_IMAGE_NAME }}:latest
           
